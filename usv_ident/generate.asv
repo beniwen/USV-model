@@ -1,0 +1,40 @@
+clc;
+clear all;
+close all;
+
+% 仿真时间和采样时间
+period = 0.01; % 采样时间
+T = 20; % 仿真总时间
+
+% 无人车扩展模型的初始状态
+u = 0; v = 0; p = 0; r = 0; phi = 0; psi = 0; x = 0; y = 0;
+state = [u; v; p; r; phi; psi; x; y];
+
+ % 假设实际系统的参数（用于生成数据）
+    m = 240.05; % 实际质量
+    Xudot = -17.4; Yvdot = -3.93; Kpdot = -77.0; Nrdot = -38.7; % 附加质量
+    d1 = 0.1; d3 = 0.1; % 阻尼矩阵元素
+    % 计算总的质量矩阵
+    M = diag([m - Xudot, m - Yvdot, m - Kpdot, m - Nrdot]);
+% 数据保存
+Input = [];
+Output = [];
+
+% 控制输入（例如正弦输入）
+for t = 0:period:T
+    tau = [500; 0; 0; 500]; % 控制输入力和力矩
+    
+    % 系统动力学模型迭代
+    out = vehicle_model(t, state, tau, d1, d3, Xudot, Yvdot, Kpdot, Nrdot);
+    dstate=out(:,1);
+    state = state + dstate * period;
+    
+    % 保存数据
+    Input = [Input; tau'];
+    Output = [Output; state'];
+end
+
+% 保存数据
+save('vehicle_example.mat', 'Input', 'Output');
+
+
